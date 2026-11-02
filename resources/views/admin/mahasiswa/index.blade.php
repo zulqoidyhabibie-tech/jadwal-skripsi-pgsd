@@ -1,0 +1,29 @@
+@extends('layouts.app')
+@section('title', 'Data mahasiswa')
+@section('content')
+<div class="panel-head" style="margin:0"><div><h1>Data mahasiswa</h1><p class="sub">Mahasiswa hanya bisa membuat akun bila NIM-nya ada di daftar ini.</p></div>
+<a class="btn" href="{{ route('admin.mahasiswa.create') }}">+ Tambah mahasiswa</a></div>
+<div class="panel">
+  <form class="row" method="get"><input type="text" name="q" value="{{ $q }}" placeholder="Cari NIM atau nama"><button class="btn ghost">Cari</button></form>
+  <div class="scroll" style="margin-top:12px"><table>
+    <thead><tr><th>NIM</th><th>Nama</th><th>Angkatan</th><th>Akun</th><th>Judul</th><th></th></tr></thead>
+    <tbody>
+    @forelse ($mahasiswa as $m)
+      <tr><td class="mono">{{ $m->nim }}</td><td><b>{{ $m->nama }}</b></td><td class="mono">{{ $m->angkatan ?? '–' }}</td>
+      <td>@if (! $m->user)<span class="pill off">Belum daftar</span>@elseif(! $m->user->is_active)<span class="pill wait">Menunggu aktivasi</span>@else<span class="pill ok">Aktif</span>@endif</td>
+      <td style="max-width:320px">{{ $m->skripsi?->judul ?? '–' }}</td>
+      <td><a class="btn sm ghost" href="{{ route('admin.mahasiswa.edit', $m) }}">Ubah</a></td></tr>
+    @empty
+      <tr><td colspan="6" class="sub">Belum ada data. Impor dari tab DATA MHS lewat CSV di bawah.</td></tr>
+    @endforelse
+    </tbody>
+  </table></div>
+  {{ $mahasiswa->links('pagination::simple-default') }}
+</div>
+<div class="panel">
+  <h2>Impor dari CSV</h2>
+  <p class="sub">Kolom: <span class="mono">nim, nama, angkatan, no_hp</span>. NIM yang sudah ada akan diperbarui.</p>
+  <form method="post" action="{{ route('admin.mahasiswa.import') }}" enctype="multipart/form-data" class="row" style="margin-top:10px">@csrf
+    <input type="file" name="file" accept=".csv,text/csv" required><button class="btn">Impor</button></form>
+</div>
+@endsection
