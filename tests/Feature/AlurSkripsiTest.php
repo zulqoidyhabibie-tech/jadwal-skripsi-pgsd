@@ -72,7 +72,8 @@ class AlurSkripsiTest extends TestCase
         $isian = $this->isiSyarat('judul', ['SKS lulus' => '80']); // di bawah minimal 100
         $this->post(route('mhs.simpan', 'judul'), ['judul' => 'Penerapan model PBL di kelas IV SD', 'isian' => $isian, 'aksi' => 'ajukan'])
             ->assertSessionHas('err');
-        $this->assertSame('draf', Pendaftaran::first()->status);
+        $putri = Mahasiswa::where('nim', '2021130045')->first();
+        $this->assertSame('draf', $putri->pendaftaran()->first()->status);
     }
 
     public function test_alur_judul_sampai_seminar_proposal_terverifikasi(): void
@@ -86,7 +87,7 @@ class AlurSkripsiTest extends TestCase
         // Ajukan judul
         $this->post(route('mhs.simpan', 'judul'), ['judul' => 'Penerapan model PBL di kelas IV SD', 'isian' => $this->isiSyarat('judul'), 'aksi' => 'ajukan'])
             ->assertRedirect(route('mhs.beranda'));
-        $pJudul = Pendaftaran::first();
+        $pJudul = $mhs->pendaftaran()->first();
         $this->assertSame('diajukan', $pJudul->status);
 
         // Kaprodi tidak boleh memilih pembimbing yang sama
@@ -104,7 +105,7 @@ class AlurSkripsiTest extends TestCase
         // Seminar proposal sekarang terbuka; ajukan
         $this->actingAs($mhsUser)->get(route('mhs.tahap', 'sempro'))->assertOk();
         $this->post(route('mhs.simpan', 'sempro'), ['isian' => $this->isiSyarat('sempro'), 'aksi' => 'ajukan'])->assertRedirect(route('mhs.beranda'));
-        $pSempro = Pendaftaran::where('tahap_id', Tahap::where('kode', 'sempro')->value('id'))->first();
+        $pSempro = $mhs->pendaftaran()->where('tahap_id', Tahap::where('kode', 'sempro')->value('id'))->first();
         $this->assertSame('diajukan', $pSempro->status);
 
         // Kaprodi menolak satu syarat -> kembali ke mahasiswa
