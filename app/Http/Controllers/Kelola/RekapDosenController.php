@@ -11,8 +11,9 @@ class RekapDosenController extends Controller
     public function __invoke(PembagianDosen $pembagian)
     {
         $beban = $pembagian->bebanBimbingan();
+        $uji = $pembagian->bebanPenguji(\App\Models\Periode::aktif()?->id);
         $dosen = Dosen::where('aktif', true)->orderBy('nama')->get();
 
-        return view('kelola.rekap-dosen', compact('dosen', 'beban'));
+        return view('kelola.rekap-dosen', compact('dosen', 'beban', 'uji'));
     }
 }

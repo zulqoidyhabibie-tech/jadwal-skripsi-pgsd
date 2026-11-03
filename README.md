@@ -12,7 +12,15 @@ Dibangun dengan Laravel 11 (PHP 8.2+) dan MySQL. Tampilan memakai Blade dan CSS 
 - Kaprodi: menyetujui judul sambil menetapkan pembimbing 1 dan 2. Sistem menyarankan dosen dengan beban paling ringan dibanding kuotanya. Kaprodi juga memverifikasi syarat seminar dan sidang, serta melihat rekap beban dosen.
 - Admin: data dosen (NIDN/NUPTK boleh kosong, kuota per peran, impor CSV), data mahasiswa (impor CSV), ruang, syarat tiap tahap, akun pengguna, dan periode.
 
-Penjadwalan sesi ujian, penugasan penguji, cek bentrok, kartu ujian, dan ekspor Excel dikerjakan di langkah 3.
+## Penjadwalan (langkah 3)
+
+- Admin membuat sesi ujian (kode, tanggal, jam, ruang, jumlah mahasiswa per sesi), lalu mengisi slotnya dengan mahasiswa yang sudah terverifikasi.
+- Penguji 1 dan 2 disarankan dari dosen yang boleh menguji, bukan pembimbing mahasiswa itu, dengan beban paling ringan dibanding kuotanya. Untuk sidang, penguji seminar proposal dipakai lagi.
+- Sistem menolak bentrok: ruang yang sama atau dosen (pembimbing maupun penguji) yang sama di sesi lain pada jam yang beririsan.
+- Jadwal baru terlihat oleh mahasiswa dan dosen setelah diterbitkan. Mahasiswa bisa membuka dan mencetak kartu ujian.
+- Kaprodi atau admin mencatat hasil (lulus, lulus dengan revisi, mengulang). Lulus seminar proposal membuka tahap sidang.
+- Jadwal bisa diekspor ke CSV dengan susunan kolom seperti Sheet lama, lalu dibuka di Excel.
+- Rekap beban dosen menampilkan jumlah bimbingan dan tugas menguji dibanding kuotanya.
 
 ## Menjalankan di komputer sendiri
 
