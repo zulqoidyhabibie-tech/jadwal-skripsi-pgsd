@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dosen;
 use App\Models\Mahasiswa;
+use App\Models\Pendaftaran;
+use App\Models\Skripsi;
+use App\Models\Tahap;
 use App\Support\Csv;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -47,22 +51,72 @@ class MahasiswaController extends Controller
     public function import(Request $request)
     {
         $request->validate(['file' => ['required', 'file', 'mimes:csv,txt', 'max:2048']]);
+        $dosen = Dosen::all();
+        $tahapJudul = Tahap::where('kode', 'judul')->value('id');
         $n = 0;
+        $skripsi = 0;
+        $takDikenal = [];
+
         foreach (Csv::baca($request->file('file')->getRealPath()) as $r) {
-            $nim = trim($r['nim'] ?? '');
-            $nama = trim($r['nama'] ?? '');
+            // Terima nama kolom dari aplikasi ini maupun dari tab DATA MHS di Sheet lama.
+            $nim = trim($r['nim'] ?? $r['npm'] ?? '');
+            $nama = trim($r['nama'] ?? $r['nama_lengkap'] ?? '');
             if ($nim === '' || $nama === '') {
                 continue;
             }
-            Mahasiswa::updateOrCreate(['nim' => $nim], array_filter([
+            $m = Mahasiswa::updateOrCreate(['nim' => $nim], array_filter([
                 'nama' => $nama,
                 'angkatan' => trim($r['angkatan'] ?? '') ?: null,
                 'no_hp' => trim($r['no_hp'] ?? '') ?: null,
             ], fn ($v) => $v !== null));
             $n++;
+
+            // Mahasiswa yang sudah punya judul dan pembimbing di Sheet: catat sebagai judul disetujui.
+            $judul = trim($r['judul_skripsi_final'] ?? '') ?: trim($r['judul_skripsi'] ?? $r['judul'] ?? '');
+            $p1 = $this->cariDosen($dosen, $r['pembimbing_1'] ?? '');
+            $p2 = $this->cariDosen($dosen, $r['pembimbing_2'] ?? '');
+            foreach ([['pembimbing_1', $p1], ['pembimbing_2', $p2]] as [$kolom, $hasil]) {
+                if (trim($r[$kolom] ?? '') !== '' && ! $hasil) {
+                    $takDikenal[] = trim($r[$kolom]);
+                }
+            }
+            if ($judul !== '' && $p1 && $p2 && ! $m->skripsi()->exists()) {
+                Skripsi::create(['mahasiswa_id' => $m->id, 'judul' => mb_substr($judul, 0, 500), 'status' => 'disetujui',
+                    'pembimbing_1_id' => $p1->id, 'pembimbing_2_id' => $p2->id]);
+                Pendaftaran::create(['mahasiswa_id' => $m->id, 'tahap_id' => $tahapJudul, 'status' => 'lulus',
+                    'catatan' => 'Diimpor dari data lama', 'diverifikasi_pada' => now()]);
+                $skripsi++;
+            }
         }
 
-        return back()->with('ok', "{$n} data mahasiswa diimpor.");
+        $pesan = "{$n} data mahasiswa diimpor";
+        $pesan .= $skripsi ? ", {$skripsi} di antaranya beserta judul dan pembimbing." : '.';
+        if ($takDikenal) {
+            $pesan .= ' Nama pembimbing tidak dikenali: '.implode(', ', array_unique($takDikenal)).'. Periksa ejaannya di data dosen.';
+        }
+
+        return back()->with($takDikenal ? 'err' : 'ok', $pesan);
+    }
+
+    /** Cocokkan nama dosen dari Sheet dengan data dosen, mengabaikan gelar, tanda baca, dan huruf besar. */
+    private function cariDosen($dosen, ?string $nama): ?Dosen
+    {
+        $kunci = self::kunciNama((string) $nama);
+        if ($kunci === '') {
+            return null;
+        }
+
+        return $dosen->first(fn ($d) => self::kunciNama($d->nama) === $kunci);
+    }
+
+    public static function kunciNama(string $nama): string
+    {
+        $nama = mb_strtolower($nama);
+        $nama = preg_replace('/,.*$/u', '', $nama); // buang gelar di belakang koma
+        $nama = preg_replace('/\b(dr|prof|drs|ir|h|hj)\.\s*/u', '', $nama); // buang gelar depan
+        $nama = preg_replace('/[^a-z\s]/u', ' ', $nama);
+
+        return trim(preg_replace('/\s+/', ' ', $nama));
     }
 
     private function data(Request $request, ?Mahasiswa $m = null): array

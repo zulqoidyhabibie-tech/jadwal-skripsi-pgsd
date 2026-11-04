@@ -22,7 +22,7 @@
 </div>
 <div class="panel">
   <h2>Impor dari CSV</h2>
-  <p class="sub">Kolom: <span class="mono">nim, nama, angkatan, no_hp</span>. NIM yang sudah ada akan diperbarui.</p>
+  <p class="sub">Kolom: <span class="mono">nim, nama, angkatan, no_hp</span>. Tab DATA MHS dari Sheet lama juga bisa langsung dipakai (kolom <span class="mono">Nama Lengkap, NPM, Angkatan, Pembimbing 1, Pembimbing 2, Judul Skripsi</span>). Mahasiswa yang sudah punya judul dan kedua pembimbing akan tercatat judulnya disetujui. NIM yang sudah ada akan diperbarui.</p>
   <form method="post" action="{{ route('admin.mahasiswa.import') }}" enctype="multipart/form-data" class="row" style="margin-top:10px">@csrf
     <input type="file" name="file" accept=".csv,text/csv" required><button class="btn">Impor</button></form>
 </div>
