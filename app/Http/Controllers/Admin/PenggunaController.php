@@ -23,6 +23,7 @@ class PenggunaController extends Controller
             'pengguna' => $pengguna,
             'filter' => $filter,
             'dosenTanpaAkun' => Dosen::whereNull('user_id')->where('aktif', true)->orderBy('nama')->get(),
+            'dosenDipilih' => $request->query('dosen') ? Dosen::whereNull('user_id')->find($request->query('dosen')) : null,
         ]);
     }
 
@@ -43,6 +44,10 @@ class PenggunaController extends Controller
             'dosen_id' => ['nullable', 'exists:dosen,id'],
         ]);
         $sandi = Str::password(10, symbols: false);
+        if ($data['role'] === 'kaprodi') {
+            // Hanya ada satu kaprodi; kaprodi sebelumnya kembali menjadi dosen.
+            User::where('role', 'kaprodi')->update(['role' => 'dosen']);
+        }
         $user = User::create($data + ['password' => $sandi, 'is_active' => true]);
         if (! empty($data['dosen_id'])) {
             Dosen::whereKey($data['dosen_id'])->update(['user_id' => $user->id]);

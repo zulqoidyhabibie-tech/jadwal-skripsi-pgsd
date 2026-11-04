@@ -17,7 +17,7 @@
       @if ($u->hasRole('mahasiswa'))
         <a href="{{ route('mhs.beranda') }}" @class(['aktif' => request()->routeIs('mhs.*')])>Skripsi saya</a>
       @endif
-      @if ($u->hasRole('dosen'))
+      @if ($u->hasRole('dosen') || ($u->hasRole('kaprodi') && $u->dosen))
         <a href="{{ route('dosen.beranda') }}" @class(['aktif' => request()->routeIs('dosen.*')])>Bimbingan saya</a>
       @endif
       @if ($u->bisaKelolaSkripsi())
@@ -40,7 +40,10 @@
     </nav>
     <div class="me">
       <b>{{ $u->name }}</b>{{ \App\Models\User::ROLES[$u->role] ?? $u->role }} · {{ $u->username }}
-      <form method="post" action="{{ route('keluar') }}" style="margin-top:8px">@csrf<button class="btn ghost sm">Keluar</button></form>
+      <div class="row" style="margin-top:8px">
+        <a class="btn ghost sm" href="{{ route('password') }}">Ganti password</a>
+        <form method="post" action="{{ route('keluar') }}">@csrf<button class="btn ghost sm">Keluar</button></form>
+      </div>
     </div>
   </aside>
   <main>

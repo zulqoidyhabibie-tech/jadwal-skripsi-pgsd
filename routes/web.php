@@ -20,6 +20,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');
     Route::get('/beranda', BerandaController::class)->name('beranda');
+    Route::get('/password', [AuthController::class, 'formPassword'])->name('password');
+    Route::put('/password', [AuthController::class, 'gantiPassword'])->middleware('throttle:6,1');
 
     // Mahasiswa
     Route::middleware('peran:mahasiswa')->prefix('mahasiswa')->name('mhs.')->group(function () {
@@ -65,8 +67,14 @@ Route::middleware('auth')->group(function () {
     Route::middleware('peran:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('dosen', Admin\DosenController::class)->except('show')->parameters(['dosen' => 'dosen']);
         Route::post('dosen-impor', [Admin\DosenController::class, 'import'])->name('dosen.import');
+        Route::get('dosen-template', [Admin\DosenController::class, 'template'])->name('dosen.template');
+        Route::post('dosen/{dosen}/kaprodi', [Admin\DosenController::class, 'jadikanKaprodi'])->name('dosen.kaprodi');
+        Route::delete('dosen/{dosen}/kaprodi', [Admin\DosenController::class, 'lepasKaprodi'])->name('dosen.lepas-kaprodi');
         Route::resource('mahasiswa', Admin\MahasiswaController::class)->except(['show', 'destroy'])->parameters(['mahasiswa' => 'mahasiswa']);
         Route::post('mahasiswa-impor', [Admin\MahasiswaController::class, 'import'])->name('mahasiswa.import');
+        Route::get('mahasiswa-template', [Admin\MahasiswaController::class, 'template'])->name('mahasiswa.template');
+        Route::post('ruang-impor', [Admin\RuangController::class, 'import'])->name('ruang.import');
+        Route::get('ruang-template', [Admin\RuangController::class, 'template'])->name('ruang.template');
         Route::resource('ruang', Admin\RuangController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['ruang' => 'ruang']);
         Route::resource('syarat', Admin\SyaratController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['syarat' => 'syarat']);
         Route::get('pengguna', [Admin\PenggunaController::class, 'index'])->name('pengguna.index');
