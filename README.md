@@ -2,7 +2,7 @@
 
 Aplikasi web untuk pengajuan judul, seminar proposal, dan sidang skripsi Prodi PGSD Universitas Muhammadiyah Muara Bungo. Aplikasi ini juga mengatur pembagian dosen pembimbing dan penguji.
 
-Dibangun dengan Laravel 11 (PHP 8.2+) dan MySQL. Tampilan memakai Blade dan CSS biasa, tanpa proses build, sehingga cocok untuk shared hosting.
+Dibangun dengan Laravel 12 (PHP 8.2+) dan MySQL. Tampilan memakai Blade dan CSS biasa, tanpa proses build, sehingga cocok untuk shared hosting.
 
 ## Yang sudah ada (langkah 2)
 
