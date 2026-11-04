@@ -1,0 +1,13 @@
+# Dipakai bila seluruh aplikasi diunggah ke public_html (shared hosting tanpa SSH).
+# Semua permintaan diarahkan ke folder public/, berkas sensitif ditolak.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+    RewriteRule ^(\.env.*|artisan|composer\.(json|lock)|phpunit\.xml|README\.md)$ - [F,L]
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
