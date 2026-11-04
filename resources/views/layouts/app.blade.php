@@ -17,7 +17,7 @@
       @if ($u->hasRole('mahasiswa'))
         <a href="{{ route('mhs.beranda') }}" @class(['aktif' => request()->routeIs('mhs.*')])>Skripsi saya</a>
       @endif
-      @if ($u->hasRole('dosen'))
+      @if ($u->hasRole('dosen') || ($u->hasRole('kaprodi') && $u->dosen))
         <a href="{{ route('dosen.beranda') }}" @class(['aktif' => request()->routeIs('dosen.*')])>Bimbingan saya</a>
       @endif
       @if ($u->bisaKelolaSkripsi())

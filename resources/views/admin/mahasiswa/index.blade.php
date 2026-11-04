@@ -14,16 +14,17 @@
       <td style="max-width:320px">{{ $m->skripsi?->judul ?? '–' }}</td>
       <td><a class="btn sm ghost" href="{{ route('admin.mahasiswa.edit', $m) }}">Ubah</a></td></tr>
     @empty
-      <tr><td colspan="6" class="sub">Belum ada data. Impor dari tab DATA MHS lewat CSV di bawah.</td></tr>
+      <tr><td colspan="6" class="sub">Belum ada data. Impor dari Excel di bawah.</td></tr>
     @endforelse
     </tbody>
   </table></div>
   {{ $mahasiswa->links('pagination::simple-default') }}
 </div>
 <div class="panel">
-  <h2>Impor dari CSV</h2>
-  <p class="sub">Kolom: <span class="mono">nim, nama, angkatan, no_hp</span>. Tab DATA MHS dari Sheet lama juga bisa langsung dipakai (kolom <span class="mono">Nama Lengkap, NPM, Angkatan, Pembimbing 1, Pembimbing 2, Judul Skripsi</span>). Mahasiswa yang sudah punya judul dan kedua pembimbing akan tercatat judulnya disetujui. NIM yang sudah ada akan diperbarui.</p>
+  <h2>Impor dari Excel atau CSV</h2>
+  <p class="sub">Unduh template, isi sheet "Data", lalu unggah berkas .xlsx-nya. Tab DATA MHS dari Sheet lama juga bisa langsung diunggah (unduh sebagai .xlsx atau .csv). Mahasiswa yang sudah punya judul dan kedua pembimbing akan tercatat judulnya disetujui. NIM yang sudah ada akan diperbarui.</p>
   <form method="post" action="{{ route('admin.mahasiswa.import') }}" enctype="multipart/form-data" class="row" style="margin-top:10px">@csrf
-    <input type="file" name="file" accept=".csv,text/csv" required><button class="btn">Impor</button></form>
+    <input type="file" name="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" required><button class="btn">Impor</button>
+    <a class="btn ghost" href="{{ route('admin.mahasiswa.template') }}">Unduh template Excel</a></form>
 </div>
 @endsection

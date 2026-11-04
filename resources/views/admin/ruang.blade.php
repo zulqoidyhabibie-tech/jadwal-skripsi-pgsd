@@ -23,4 +23,11 @@
     <label class="f" style="max-width:140px">Kapasitas<input type="number" name="kapasitas" min="1"></label>
     <button class="btn">Tambah</button></form>
 </div>
+<div class="panel">
+  <h2>Impor dari Excel atau CSV</h2>
+  <p class="sub">Kolom: nama dan kapasitas. Ruang dengan nama yang sama akan diperbarui.</p>
+  <form method="post" action="{{ route('admin.ruang.import') }}" enctype="multipart/form-data" class="row" style="margin-top:10px">@csrf
+    <input type="file" name="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" required><button class="btn">Impor</button>
+    <a class="btn ghost" href="{{ route('admin.ruang.template') }}">Unduh template Excel</a></form>
+</div>
 @endsection

@@ -8,7 +8,7 @@ use App\Models\Mahasiswa;
 use App\Models\Pendaftaran;
 use App\Models\Skripsi;
 use App\Models\Tahap;
-use App\Support\Csv;
+use App\Support\Tabel;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -50,14 +50,14 @@ class MahasiswaController extends Controller
 
     public function import(Request $request)
     {
-        $request->validate(['file' => ['required', 'file', 'mimes:csv,txt', 'max:2048']]);
+        $request->validate(['file' => Tabel::ATURAN_BERKAS], ['file.mimes' => 'Berkas harus Excel (.xlsx) atau CSV.']);
         $dosen = Dosen::all();
         $tahapJudul = Tahap::where('kode', 'judul')->value('id');
         $n = 0;
         $skripsi = 0;
         $takDikenal = [];
 
-        foreach (Csv::baca($request->file('file')->getRealPath()) as $r) {
+        foreach (Tabel::baca($request->file('file')) as $r) {
             // Terima nama kolom dari aplikasi ini maupun dari tab DATA MHS di Sheet lama.
             $nim = trim($r['nim'] ?? $r['npm'] ?? '');
             $nama = trim($r['nama'] ?? $r['nama_lengkap'] ?? '');
@@ -67,7 +67,7 @@ class MahasiswaController extends Controller
             $m = Mahasiswa::updateOrCreate(['nim' => $nim], array_filter([
                 'nama' => $nama,
                 'angkatan' => trim($r['angkatan'] ?? '') ?: null,
-                'no_hp' => trim($r['no_hp'] ?? '') ?: null,
+                'no_hp' => self::rapikanHp($r['no_hp'] ?? $r['no._hp'] ?? $r['no_wa'] ?? ''),
             ], fn ($v) => $v !== null));
             $n++;
 
@@ -126,6 +126,32 @@ class MahasiswaController extends Controller
             'nama' => ['required', 'string', 'max:255'],
             'angkatan' => ['nullable', 'digits:4'],
             'no_hp' => ['nullable', 'string', 'max:20'],
+        ]);
+    }
+
+    /** Excel membuang angka 0 di depan nomor HP; kembalikan bila hilang. */
+    public static function rapikanHp(string $hp): ?string
+    {
+        $hp = preg_replace('/[^0-9+]/', '', $hp);
+        if ($hp === '') {
+            return null;
+        }
+
+        return str_starts_with($hp, '8') ? '0'.$hp : $hp;
+    }
+
+    public function template()
+    {
+        return Tabel::template('template-mahasiswa.xlsx', [
+            'nim' => 'NIM / NPM mahasiswa. NIM yang sudah ada akan diperbarui.',
+            'nama' => 'Nama lengkap mahasiswa.',
+            'angkatan' => 'Tahun masuk, misalnya 2022.',
+            'no_hp' => 'Nomor HP/WA. Boleh kosong.',
+            'pembimbing_1' => 'Isi hanya bila judul sudah disetujui. Tulis nama dosen persis seperti di Data dosen.',
+            'pembimbing_2' => 'Isi hanya bila judul sudah disetujui.',
+            'judul_skripsi' => 'Isi hanya bila judul sudah disetujui. Bila judul dan kedua pembimbing terisi, judul langsung tercatat disetujui.',
+        ], [
+            ['2022130001', 'Contoh Mahasiswa', '2022', '081234567890', '', '', ''],
         ]);
     }
 }

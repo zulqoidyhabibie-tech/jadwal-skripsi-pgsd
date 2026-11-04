@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dosen;
+use App\Models\User;
 use App\Support\Csv;
+use App\Support\Tabel;
 use Illuminate\Http\Request;
 
 class DosenController extends Controller
@@ -13,7 +15,7 @@ class DosenController extends Controller
     {
         $q = $request->query('q');
         $dosen = Dosen::when($q, fn ($w) => $w->where('nama', 'like', "%{$q}%")->orWhere('nomor_identitas', 'like', "%{$q}%"))
-            ->orderBy('nama')->paginate(30)->withQueryString();
+            ->with('user')->orderBy('nama')->paginate(30)->withQueryString();
 
         return view('admin.dosen.index', compact('dosen', 'q'));
     }
@@ -51,8 +53,8 @@ class DosenController extends Controller
 
     public function import(Request $request)
     {
-        $request->validate(['file' => ['required', 'file', 'mimes:csv,txt', 'max:2048']]);
-        $baris = Csv::baca($request->file('file')->getRealPath());
+        $request->validate(['file' => Tabel::ATURAN_BERKAS], ['file.mimes' => 'Berkas harus Excel (.xlsx) atau CSV.']);
+        $baris = Tabel::baca($request->file('file'));
         $n = 0;
         foreach ($baris as $r) {
             $nama = trim($r['nama'] ?? '');
@@ -97,5 +99,48 @@ class DosenController extends Controller
         }
 
         return $data;
+    }
+
+    public function template()
+    {
+        return Tabel::template('template-dosen.xlsx', [
+            'nama' => 'Nama lengkap dengan gelar. Dosen dengan nama yang sama akan diperbarui.',
+            'jenis_identitas' => 'NIDN atau NUPTK. Boleh kosong.',
+            'nomor_identitas' => 'Nomor NIDN/NUPTK. Boleh kosong, bisa dilengkapi nanti.',
+            'boleh_p1' => 'Boleh menjadi pembimbing 1: ya / tidak.',
+            'boleh_p2' => 'Boleh menjadi pembimbing 2: ya / tidak.',
+            'boleh_penguji' => 'Boleh menjadi penguji: ya / tidak.',
+            'kuota_p1' => 'Kuota mahasiswa sebagai pembimbing 1. Isi 0 bila tanpa batas.',
+            'kuota_p2' => 'Kuota mahasiswa sebagai pembimbing 2. Isi 0 bila tanpa batas.',
+            'kuota_u1' => 'Kuota sebagai penguji 1 per periode. Isi 0 bila tanpa batas.',
+            'kuota_u2' => 'Kuota sebagai penguji 2 per periode. Isi 0 bila tanpa batas.',
+        ], [
+            ['Dr. Contoh Dosen, M.Pd.', 'NIDN', '1012345678', 'ya', 'ya', 'ya', 8, 8, 10, 10],
+            ['Contoh Dosen Kedua, M.Pd.', '', '', 'tidak', 'ya', 'ya', 0, 6, 0, 10],
+        ]);
+    }
+
+    /** Jadikan dosen ini kaprodi memakai akun dosennya sendiri; kaprodi sebelumnya kembali menjadi dosen. */
+    public function jadikanKaprodi(Dosen $dosen)
+    {
+        abort_unless($dosen->user, 422, 'Dosen ini belum punya akun.');
+        $lama = User::where('role', 'kaprodi')->whereKeyNot($dosen->user_id)->get();
+        User::whereIn('id', $lama->pluck('id'))->update(['role' => 'dosen']);
+        $dosen->user->update(['role' => 'kaprodi', 'is_active' => true]);
+
+        $pesan = "{$dosen->nama} sekarang menjadi kaprodi dan tetap bisa melihat bimbingannya.";
+        if ($lama->isNotEmpty()) {
+            $pesan .= ' Kaprodi sebelumnya ('.$lama->pluck('name')->join(', ').') kembali berperan sebagai dosen.';
+        }
+
+        return back()->with('ok', $pesan);
+    }
+
+    public function lepasKaprodi(Dosen $dosen)
+    {
+        abort_unless($dosen->user && $dosen->user->role === 'kaprodi', 422);
+        $dosen->user->update(['role' => 'dosen']);
+
+        return back()->with('ok', "{$dosen->nama} kembali berperan sebagai dosen.");
     }
 }

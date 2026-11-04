@@ -10,7 +10,7 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    public const ROLES = ['admin' => 'Admin', 'kaprodi' => 'Kaprodi', 'dosen' => 'Dosen', 'mahasiswa' => 'Mahasiswa'];
+    public const ROLES = ['admin' => 'Staf prodi (admin)', 'kaprodi' => 'Kaprodi', 'dosen' => 'Dosen', 'mahasiswa' => 'Mahasiswa'];
 
     protected $fillable = ['name', 'username', 'email', 'password', 'role', 'is_active'];
 
