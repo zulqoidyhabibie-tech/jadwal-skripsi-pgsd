@@ -38,7 +38,18 @@ Akun contoh (password `password123`): `kaprodi`, `siti` (dosen), `2021130045` (m
 
 Jalankan tes: `php artisan test`.
 
-## Memasang di Hostinger (shared hosting)
+## Memasang di Hostinger tanpa SSH (paket web hosting biasa)
+
+Cara ini sudah diuji dengan Apache dan MySQL/MariaDB. Berkas `.htaccess` di akar repo mengarahkan semua permintaan ke folder `public/` dan menolak akses ke `.env`, `vendor/`, `storage/`, dan berkas sensitif lain.
+
+1. hPanel → Advanced → PHP Configuration: pilih PHP 8.2 atau lebih baru.
+2. hPanel → Databases → MySQL Databases: buat database dan penggunanya.
+3. Buka phpMyAdmin untuk database itu, tab Import, unggah `database-awal.sql` (struktur tabel + akun `admin` dengan password `gantipassword123`).
+4. File Manager → `public_html`: hapus `default.php`, unggah paket zip rilis (isi repo + `vendor/` hasil `composer install --no-dev`), lalu Extract di tempat.
+5. Edit `.env` di `public_html`: isi `APP_URL`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`. `APP_KEY` harus terisi (`php artisan key:generate --show` di komputer lokal).
+6. Buka domain, masuk sebagai `admin`, segera ganti password, lalu impor data dosen dan mahasiswa.
+
+## Memasang di Hostinger dengan SSH
 
 1. Di hPanel, buat database MySQL beserta penggunanya.
 2. Aktifkan akses SSH (hPanel → Advanced → SSH Access), lalu masuk lewat SSH.
