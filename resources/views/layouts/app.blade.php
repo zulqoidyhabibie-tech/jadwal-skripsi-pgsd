@@ -25,6 +25,7 @@
         <span class="label">Kaprodi</span>
         <a href="{{ route('kelola.judul.index') }}" @class(['aktif' => request()->routeIs('kelola.judul.*')])>Persetujuan judul</a>
         <a href="{{ route('kelola.verifikasi.index') }}" @class(['aktif' => request()->routeIs('kelola.verifikasi.*')])>Verifikasi pendaftaran</a>
+        <a href="{{ route('kelola.jadwal.index') }}" @class(['aktif' => request()->routeIs('kelola.jadwal.*')])>Jadwal ujian</a>
         <a href="{{ route('kelola.rekap') }}" @class(['aktif' => request()->routeIs('kelola.rekap')])>Rekap beban dosen</a>
       @endif
       @if ($u->hasRole('admin'))

@@ -43,7 +43,7 @@ h2{font-size:16px;margin:0}
 .dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700}
 .dot.ok{background:var(--ok-soft);color:var(--ok)} .dot.no{border:1px dashed var(--line);color:var(--muted)}
 .req .name{font-weight:600} .hint{font-size:12px;color:var(--muted)}
-input[type=text],input[type=url],input[type=number],input[type=email],input[type=password],input[type=file],select,textarea{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+input[type=text],input[type=url],input[type=date],input[type=time],input[type=number],input[type=email],input[type=password],input[type=file],select,textarea{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 textarea{min-height:80px}
 label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:13px}
 .chk{display:flex;gap:8px;align-items:center;font-weight:500}

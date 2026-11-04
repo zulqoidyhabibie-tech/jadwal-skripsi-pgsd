@@ -4,7 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Dosen;
 use App\Models\Mahasiswa;
+use App\Models\Pendaftaran;
 use App\Models\Ruang;
+use App\Models\Skripsi;
+use App\Models\Tahap;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -32,5 +35,20 @@ class ContohSeeder extends Seeder
         Mahasiswa::where('nim', '2021130045')->update(['user_id' => $mhsUser->id]);
         $dosenUser = User::firstOrCreate(['username' => 'siti'], ['name' => 'Siti Rahmah, M.Pd.', 'email' => 'siti@pgsd.local', 'password' => 'password123', 'role' => 'dosen', 'is_active' => true]);
         Dosen::where('nama', 'Siti Rahmah, M.Pd.')->update(['user_id' => $dosenUser->id]);
+    
+        // Dua mahasiswa contoh yang judulnya sudah disetujui dan siap dijadwalkan seminar proposal.
+        $d = Dosen::orderBy('id')->get();
+        foreach ([['2021130012', 0, 1], ['2021130027', 3, 4]] as [$nim, $i1, $i2]) {
+            $m = Mahasiswa::where('nim', $nim)->first();
+            if (Skripsi::where('mahasiswa_id', $m->id)->exists()) {
+                continue;
+            }
+            Skripsi::create(['mahasiswa_id' => $m->id, 'judul' => $nim === '2021130012'
+                ? 'Pengaruh media pop-up book terhadap minat baca siswa kelas II SD'
+                : 'Analisis kesulitan belajar pecahan pada siswa kelas V SD',
+                'status' => 'disetujui', 'pembimbing_1_id' => $d[$i1]->id, 'pembimbing_2_id' => $d[$i2]->id]);
+            Pendaftaran::create(['mahasiswa_id' => $m->id, 'tahap_id' => Tahap::where('kode', 'judul')->value('id'), 'status' => 'lulus']);
+            Pendaftaran::create(['mahasiswa_id' => $m->id, 'tahap_id' => Tahap::where('kode', 'sempro')->value('id'), 'status' => 'terverifikasi', 'diajukan_pada' => now(), 'diverifikasi_pada' => now()]);
+        }
     }
 }

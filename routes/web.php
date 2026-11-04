@@ -42,6 +42,23 @@ Route::middleware('auth')->group(function () {
         Route::get('/verifikasi/{pendaftaran}', [Kelola\VerifikasiController::class, 'show'])->name('verifikasi.show');
         Route::post('/verifikasi/{pendaftaran}', [Kelola\VerifikasiController::class, 'putuskan'])->name('verifikasi.putuskan');
         Route::get('/rekap-dosen', Kelola\RekapDosenController::class)->name('rekap');
+        Route::get('/jadwal', [Kelola\JadwalController::class, 'index'])->name('jadwal.index');
+        Route::get('/jadwal/ekspor', [Kelola\JadwalController::class, 'ekspor'])->name('jadwal.ekspor');
+        Route::get('/jadwal/sesi/{sesi}', [Kelola\JadwalController::class, 'sesi'])->name('jadwal.sesi');
+        Route::post('/jadwal/slot/{jadwal}/hasil', [Kelola\JadwalController::class, 'hasil'])->name('jadwal.hasil');
+    });
+
+    // Kartu ujian: kaprodi/admin, atau mahasiswa pemiliknya
+    Route::get('/kartu-ujian/{jadwal}', [Kelola\JadwalController::class, 'kartu'])->name('jadwal.kartu');
+
+    // Menyusun jadwal: admin
+    Route::middleware('peran:admin')->prefix('kelola/jadwal')->name('kelola.jadwal.')->group(function () {
+        Route::post('/sesi', [Kelola\JadwalController::class, 'buatSesi'])->name('sesi.store');
+        Route::put('/sesi/{sesi}', [Kelola\JadwalController::class, 'ubahSesi'])->name('sesi.update');
+        Route::delete('/sesi/{sesi}', [Kelola\JadwalController::class, 'hapusSesi'])->name('sesi.destroy');
+        Route::post('/sesi/{sesi}/terbitkan', [Kelola\JadwalController::class, 'terbitkan'])->name('sesi.terbitkan');
+        Route::post('/sesi/{sesi}/slot', [Kelola\JadwalController::class, 'tambahSlot'])->name('slot.store');
+        Route::delete('/slot/{jadwal}', [Kelola\JadwalController::class, 'hapusSlot'])->name('slot.destroy');
     });
 
     // Admin saja

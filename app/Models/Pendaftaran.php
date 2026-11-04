@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Pendaftaran extends Model
 {
@@ -42,6 +43,11 @@ class Pendaftaran extends Model
     public function isian(): HasMany
     {
         return $this->hasMany(IsianSyarat::class);
+    }
+
+    public function jadwal(): HasOne
+    {
+        return $this->hasOne(JadwalUjian::class);
     }
 
     public function statusLabel(): string

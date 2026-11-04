@@ -16,5 +16,19 @@
     </tbody>
   </table></div>
 </div>
-<p class="sub">Jadwal menguji akan tampil di sini setelah fitur penjadwalan selesai.</p>
+<div class="panel">
+  <div class="panel-head"><h2>Jadwal ujian saya</h2><span class="hint">Seminar dan sidang yang sudah diterbitkan</span></div>
+  <div class="scroll"><table>
+    <thead><tr><th>Waktu</th><th>Ruang</th><th>Mahasiswa</th><th>Tahap</th><th>Peran saya</th></tr></thead>
+    <tbody>
+    @forelse ($jadwal as $j)
+      <tr><td class="mono">{{ $j->sesi->tanggalLengkap() }}<br>{{ $j->sesi->waktu() }}</td><td>{{ $j->sesi->ruang->nama }}<div class="mono">{{ $j->sesi->kode }}</div></td>
+      <td>{{ $j->pendaftaran->mahasiswa->nama }}</td><td>{{ $j->sesi->tahap->nama }}</td>
+      <td><span class="pill {{ str_starts_with($j->peranSaya, 'Penguji') ? 'wait' : 'ok' }}">{{ $j->peranSaya }}</span></td></tr>
+    @empty
+      <tr><td colspan="5" class="sub">Belum ada jadwal.</td></tr>
+    @endforelse
+    </tbody>
+  </table></div>
+</div>
 @endsection
