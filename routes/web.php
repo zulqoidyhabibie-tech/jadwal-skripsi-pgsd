@@ -20,6 +20,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');
     Route::get('/beranda', BerandaController::class)->name('beranda');
+    Route::get('/password', [AuthController::class, 'formPassword'])->name('password');
+    Route::put('/password', [AuthController::class, 'gantiPassword'])->middleware('throttle:6,1');
 
     // Mahasiswa
     Route::middleware('peran:mahasiswa')->prefix('mahasiswa')->name('mhs.')->group(function () {

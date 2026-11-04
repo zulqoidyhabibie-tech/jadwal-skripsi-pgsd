@@ -87,4 +87,25 @@ class AuthController extends Controller
 
         return redirect()->route('masuk');
     }
+
+    public function formPassword()
+    {
+        return view('auth.password');
+    }
+
+    public function gantiPassword(Request $request)
+    {
+        $request->validate([
+            'password_lama' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', Password::min(8), 'different:password_lama'],
+        ], [
+            'password_lama.current_password' => 'Password lama tidak cocok.',
+            'password.different' => 'Password baru harus berbeda dari password lama.',
+        ], ['password_lama' => 'password lama', 'password' => 'password baru']);
+
+        $request->user()->update(['password' => $request->input('password')]);
+        Auth::logoutOtherDevices($request->input('password'));
+
+        return redirect()->route('beranda')->with('ok', 'Password berhasil diganti.');
+    }
 }
