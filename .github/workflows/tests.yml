@@ -42,3 +42,59 @@ jobs:
 
       - name: Execute tests
         run: vendor/bin/phpunit
+
+  # Setelah tes lulus di main: siapkan cabang "hostinger" berisi aplikasi + vendor/
+  # siap pakai. Hostinger (hPanel > Git, deploy otomatis) menarik cabang ini.
+  hostinger:
+    needs: tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency: hostinger
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: mbstring, zip, xmlreader, pdo_mysql
+          coverage: none
+
+      - name: Install production dependencies
+        working-directory: src
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction --no-progress
+
+      - name: Build hostinger branch
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          url="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads "$url" hostinger >/dev/null; then
+            git clone --quiet --branch hostinger --single-branch "$url" build
+          else
+            git init --quiet -b hostinger build
+            git -C build remote add origin "$url"
+          fi
+          rsync -a --delete \
+            --exclude .git --exclude .github --exclude tests --exclude phpunit.xml \
+            --exclude node_modules --exclude package.json --exclude vite.config.js \
+            --exclude postcss.config.js --exclude tailwind.config.js \
+            --exclude .env --exclude database/database.sqlite \
+            src/ build/
+          # vendor/ ikut di-commit karena hosting tidak menjalankan composer.
+          sed -i '\#^/vendor$#d' build/.gitignore
+          cd build
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --quiet -m "Rilis dari main ${GITHUB_SHA::7}"
+          git push --quiet origin hostinger
